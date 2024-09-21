@@ -4,11 +4,15 @@ This is a **Connect Four** game implemented using Python, enhanced with a built-
 
 ## How to play:
 1. **Start the game:** Run the `connect_four_server.py` script to start the server, then run the `connect_four_client.py` script on two different machines or terminals to connect as players.
+
 2. **Game setup:** The game starts with an empty 6x7 grid. Two players alternate turns to drop their discs.
+
 3. **Play the game:**
    - Players select a column to drop their disc into. The disc will fall to the lowest available row in that column.
    - The first player to connect four discs vertically, horizontally, or diagonally wins!
+
 4. **Chat while playing:** Players can send messages to each other during the game using the built-in chat interface.
+
 5. **Restart the game:** Once a game is finished, players can reset and play again.
 
 ## Features:
