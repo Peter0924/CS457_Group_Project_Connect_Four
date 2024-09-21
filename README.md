@@ -17,7 +17,6 @@ This is a **Connect Four** game implemented using Python, enhanced with a built-
 - Two-player local game mode
 - Automatic victory detection
 - Reset and restart functionality
-- Simple, intuitive game controls
 
 ## Technologies used:
 - Python
