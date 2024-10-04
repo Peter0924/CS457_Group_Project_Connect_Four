@@ -12,16 +12,20 @@ def client_connection(client_socket, client_address):
         try:
             message = client_socket.recv(1024).decode('utf-8')
             if not message:
-                logging.info(f"Empty message received from {client_address}. Closing connection.")
                 break
             logging.info(f"Message received from {client_address}: {message}")
+
+            # Echo the message back to the client
             client_socket.send(f"Server echoed message: {message}".encode('utf-8'))
-        except (ConnectionResetError, socket.error) as e:
-            logging.error(f"Connection lost with {client_address}: {e}")
+        except ConnectionResetError:
+            logging.error(f"Connection lost with {client_address}")
             break
-        finally:
-            logging.info(f"Client {client_address} disconnected.")
-            client_socket.close()
+        except Exception as e:
+            logging.error(f"Unexpected error with client {client_address}: {e}")
+            break
+    
+    logging.info(f"Client {client_address} disconnected.")
+    client_socket.close()
 
 def server_startup(server_address='0.0.0.0', port=12345):
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -51,10 +55,13 @@ def accept_connections(server):
         try:
             client_socket, client_address = server.accept()
             logging.info(f"Connection from {client_address} established.")
+
+            # Start a new thread to handle the client
             client_handler = threading.Thread(target=client_connection, args=(client_socket, client_address))
-            client_handler.daemon = True 
+            client_handler.daemon = True  # Allows the server to exit if the main thread exits
             client_handler.start()
         except OSError:
+            # Socket will throw an OSError when it's closed and this loop continues to run
             break
 
 if __name__ == "__main__":
