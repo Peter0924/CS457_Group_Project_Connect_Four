@@ -5,7 +5,7 @@ import logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 
 HOST = '127.0.0.1'  # Server address
-PORT = 12345        # Server port
+PORT = 12345      # Server port
 
 def start_client():
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
