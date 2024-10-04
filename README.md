@@ -4,23 +4,31 @@ This is a simple implementation of a server-client application using Python. The
 
 ## How to run
 
-1. **Start the Server** Run `python server.py`
+1. **Start the Server** 
+   - Run `python server.py`
 
-2. **Start the Client** Run `python client.py`
+2. **Start the Client** 
+   - Run `python client.py`
 
-3. **Message exchange** Type anything in client terminal and press enter, the server should print out the message and echo it back to the client.
+3. **Message exchange** 
+   - Type any message in client terminal and press enter, the server should print out the message and echo it back to the client.
 
-4. **Shutdonw the Server** Type `shutdown` or `CTRL + C` to shut down the server
+4. **Shutdonw the Server** 
+   - Type `shutdown` or `CTRL + C` to shut down the server
 
-5. **Shutdown the Client** Type `exit` to shut down the client
+5. **Shutdown the Client** 
+   - Type `exit` to shut down the client
 
 ## Test Instructions
 
-1. **Create a virtual environment to isolate our project's dependencies** `python -m venv venv`
+1. **Create a virtual environment to isolate our project's dependencies** 
+   - `python -m venv venv`
 
-2. **Activate Virtual Environment** Run the `venv/Scripts/activate`
+2. **Activate Virtual Environment** 
+   - Run the `venv/Scripts/activate`
 
-3. **Start the Server** Start the another new terminal and run `python server.py`
+3. **Start the Server** 
+   - Start the another new terminal and run `python server.py`
 
 4. **Run the Test** 
    - Go back to the terminal where we activate the virtual environment
