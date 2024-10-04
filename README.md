@@ -23,8 +23,8 @@ This is a simple implementation of a server-client application using Python. The
 3. **Start the Server** Start the another new terminal and run `python server.py`
 
 4. **Run the Test** 
-   -Go back to the terminal where we activate the virtual environment
-   -Run the test by using `pytest test.py`
+   - Go back to the terminal where we activate the virtual environment
+   - Run the test by using `pytest test.py`
    
 
 # Connect Four Game with Chat Feature
