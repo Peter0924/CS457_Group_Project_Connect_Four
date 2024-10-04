@@ -25,16 +25,23 @@ def client_connection(client_socket, client_address):
 
 def server_startup(server_address='0.0.0.0', port=12345):
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    try:
-        server.bind((server_address, port))
-        server.listen(5) 
-        logging.info(f"Server started on {server_address}:{port}")
-        accept_thread = threading.Thread(target=accept_connections, args=(server,))
-        accept_thread.start()
-        accept_thread.join()
+    server.bind((server_address, port))
+    server.listen(5)  # Set the max number of simultaneous connections
+    logging.info(f"Server started on {server_address}:{port}")
 
+    # Start a thread to accept client connections
+    accept_thread = threading.Thread(target=accept_connections, args=(server,))
+    accept_thread.start()
+
+    # Wait for shutdown command
+    try:
+        while True:
+            command = input("Type 'shutdown' to stop the server: ").strip().lower()
+            if command == 'shutdown':
+                logging.info("Shutdown command received. Shutting down server...")
+                break
     except KeyboardInterrupt:
-        logging.info("KeyboardInterrupt received. Shutting down server.")
+        logging.info("KeyboardInterrupt received. Shutting down server...")
     finally:
         server.close()
         logging.info("Server socket closed.")

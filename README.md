@@ -1,3 +1,32 @@
+# Sprint 1 Overview
+
+This is a simple implementation of a server-client application using Python. The server can handle multiple client connections simultaneously, and both the server and clients can exchange messages.
+
+## How to run
+
+1. **Start the Server** Run `python server.py`
+
+2. **Start the Client** Run `python client.py`
+
+3. **Message exchange** Type anything in client terminal and press enter, the server should print out the message and echo it back to the client.
+
+4. **Shutdonw the Server** Type `shutdown` or `CTRL + C` to shut down the server
+
+5. **Shutdown the Client** Type `exit` to shut down the client
+
+## Test Instructions
+
+1. **Create a virtual environment to isolate our project's dependencies** `python -m venv venv`
+
+2. **Activate Virtual Environment** Run the `venv/Scripts/activate`
+
+3. **Start the Server** Start the another new terminal and run `python server.py`
+
+4. **Run the Test** 
+   -Go back to the terminal where we activate the virtual environment
+   -Run the test by using `pytest test.py`
+   
+
 # Connect Four Game with Chat Feature
 
 This is a **Connect Four** game implemented using Python, enhanced with a built-in chat feature. Players can enjoy the classic game while chatting with each other in real time during gameplay.
