@@ -8,35 +8,40 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 
 clients = {} 
 
-def broadcast_message(message):
-    """Send a message to all connected clients."""
+def broadcast_message(message, exclude_client=None):
+    disconnected_clients = []
     for client_socket in clients:
-        try:
-            client_socket.send(message.encode('utf-8'))
-        except Exception as e:
-            logging.error(f"Error broadcasting to {clients[client_socket]}: {e}")
+        if client_socket != exclude_client:  
+            try:
+                client_socket.send((message + '\n').encode('utf-8')) 
+            except Exception as e:
+                logging.error(f"Error broadcasting to {clients[client_socket]['username']}: {e}")
+                disconnected_clients.append(client_socket)
+
+    # Remove disconnected clients from the list
+    for client_socket in disconnected_clients:
+        if client_socket in clients:
+            del clients[client_socket]
 
 def client_connection(client_socket, client_address):
     logging.info(f"Connection established with {client_address}")
     clients[client_socket] = {"address": client_address, "username": None, "position": (0,0)}
 
-    while True:
-        try:
+    try:
+        while True:
             message = client_socket.recv(1024).decode('utf-8')
             if not message:
                 break
             logging.info(f"Message received from {client_address}: {message}")
             handle_message(client_socket, message)
-        except ConnectionResetError:
-            logging.error(f"Connection lost with {client_address}")
-            break
-        except Exception as e:
-            logging.error(f"Unexpected error with client {client_address}: {e}")
-            break
+    except (ConnectionResetError, OSError):
+        logging.error(f"Connection lost with {client_address}")
+    except Exception as e:
+        logging.error(f"Unexpected error with client {client_address}: {e}")
+    finally:
+        # Ensure that we always call handle_quit when a client disconnects
+        handle_quit(client_socket)
 
-    logging.info(f"Client {client_address} disconnected.")
-    if client_socket in clients:
-        del clients[client_socket]
     client_socket.close()
 
 def handle_message(client_socket, message):
@@ -76,15 +81,16 @@ def handle_chat(client_socket, data):
     username = clients[client_socket]["username"]
     chat_message = data.get('message')
     response = {"type": "chat", "message": f"{username}: {chat_message}"}
-    broadcast_message(json.dumps(response))
+    broadcast_message(json.dumps(response), exclude_client=client_socket)
 
 def handle_quit(client_socket):
-    username = clients[client_socket]["username"]
-    response = {"type": "quit", "message": f"{username} has left the game."}
-    broadcast_message(json.dumps(response))
-    client_socket.close()
+    username = clients[client_socket].get("username") if client_socket in clients else None
+    if username:
+        response = {"type": "quit", "message": f"{username} has left the game."}
+        broadcast_message(json.dumps(response), exclude_client=client_socket)
+        logging.info(f"Client {username} has been removed from the game.")
     if client_socket in clients:
-        del clients[client_socket]  # Remove client from list
+        del clients[client_socket]
 
 def server_startup(server_address='0.0.0.0', port=12345):
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
