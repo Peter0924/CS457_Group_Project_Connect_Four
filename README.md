@@ -50,7 +50,13 @@ This is a **Connect Four** game implemented using Python, enhanced with a built-
 
 4. **Chat while playing:** Players can send messages to each other during the game using the built-in chat interface.
 
-5. **Restart the game:** Once a game is finished, players can reset and play again.
+5. **Message Commands:** Players can utilize four different message commands during the game:
+   - join: Player joins game.
+   - move: Player moves to a specified x and y position.
+   - chat: Player sends a message.
+   - quit: Player leaves game.
+
+6. **Restart the game:** Once a game is finished, players can reset and play again.
 
 ## Features:
 - Real-time chat functionality during the game

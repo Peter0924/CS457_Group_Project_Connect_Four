@@ -18,7 +18,7 @@ def broadcast_message(message):
 
 def client_connection(client_socket, client_address):
     logging.info(f"Connection established with {client_address}")
-    clients[client_socket] = {"address": client_address, "username": None}
+    clients[client_socket] = {"address": client_address, "username": None, "position": (0,0)}
 
     while True:
         try:
@@ -61,12 +61,14 @@ def handle_message(client_socket, message):
 def handle_join(client_socket, data):
     username = data.get('username')
     clients[client_socket]["username"] = username
+    clients[client_socket]["position"] = (0, 0) # initialize at (0,0)
     response = {"type": "join", "message": f"Player {username} has joined the game."}
     broadcast_message(json.dumps(response))
 
 def handle_move(client_socket, data):
     x, y = data.get('x'), data.get('y')
     username = clients[client_socket]["username"]
+    clients[client_socket]["position"] = (x, y)
     response = {"type": "move", "message": f"{username} moved to ({x}, {y})"}
     broadcast_message(json.dumps(response))
 
