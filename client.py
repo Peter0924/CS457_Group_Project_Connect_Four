@@ -15,16 +15,13 @@ game_state = {
 }
 
 def update_game_state(response):
-    """Update the game state based on server response."""
     response_data = json.loads(response)
     
     if response_data['type'] == 'join':
         logging.info(response_data['message'])
-        game_state["players"].append(response_data['message'])  # Add new player to the state
-
+        game_state["players"].append(response_data['message']) 
     elif response_data['type'] == 'move':
         logging.info(response_data['message'])
-        # Update the player's position (this is a basic example, adjust as needed)
         game_state["player_position"] = response_data['message']
 
     elif response_data['type'] == 'chat':
@@ -32,11 +29,9 @@ def update_game_state(response):
 
     elif response_data['type'] == 'quit':
         logging.info(response_data['message'])
-        # You could also remove the player from the game state here
-        game_state["players"].remove(response_data['message'])
-
-    elif response_data['type'] == 'error':
-        logging.error(f"Error from server: {response_data['message']}")
+        # Assuming response['message'] is "{username} has left the game."
+        leaving_player = response_data['message'].split(" ")[0]
+        game_state["players"] = [p for p in game_state["players"] if leaving_player not in p]
 
 def start_client():
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -47,31 +42,33 @@ def start_client():
         # Send a join message to the server
         username = input("Enter your username: ")
         join_message = json.dumps({"type": "join", "username": username})
-        client.send(join_message.encode('utf-8'))
+        client.send((join_message + '\n').encode('utf-8'))  # Add a delimiter when sending
 
         while True:
-            message = input("Enter message (type 'move', 'chat', or 'exit' to disconnect): ")
+            message = input("Enter message (type 'move', 'chat', or 'quit' to disconnect): ")
 
             if message.lower() == 'move':
                 x = int(input("Enter x coordinate: "))
                 y = int(input("Enter y coordinate: "))
                 move_message = json.dumps({"type": "move", "x": x, "y": y})
-                client.send(move_message.encode('utf-8'))
+                client.send((move_message + '\n').encode('utf-8'))  # Add delimiter
 
             elif message.lower() == 'chat':
                 chat_message = input("Enter chat message: ")
                 chat_message = json.dumps({"type": "chat", "message": chat_message})
-                client.send(chat_message.encode('utf-8'))
+                client.send((chat_message + '\n').encode('utf-8'))  # Add delimiter
 
-            elif message.lower() == 'exit':
+            elif message.lower() == 'quit':
                 quit_message = json.dumps({"type": "quit"})
-                client.send(quit_message.encode('utf-8'))
+                client.send((quit_message + '\n').encode('utf-8'))  # Add delimiter
                 break
 
-            # Receive server response and update the game state
-            response = client.recv(1024).decode('utf-8')
-            if response:
-                update_game_state(response)
+            # Receive and process messages
+            data = client.recv(1024).decode('utf-8')
+            if data:
+                # Split the data on the newline delimiter and process each message
+                for response in data.strip().split('\n'):
+                    update_game_state(response)
 
     except Exception as e:
         logging.error(f"Connection error: {e}")
