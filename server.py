@@ -119,7 +119,7 @@ def accept_connections(server):
     while True:
         try:
             client_socket, client_address = server.accept()
-            logging.info(f"Connection from {client_address} established.")
+            #logging.info(f"Connection from {client_address} established.")
 
             client_handler = threading.Thread(target=client_connection, args=(client_socket, client_address))
             client_handler.daemon = True 

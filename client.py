@@ -62,6 +62,8 @@ def start_client():
                 quit_message = json.dumps({"type": "quit"})
                 client.send((quit_message + '\n').encode('utf-8'))  # Add delimiter
                 break
+            message = input("Unrecognizable command entered. Please type 'move', 'chat', or 'quit'")
+            client.send("Unrecognizable command from client.".encode('utf-8'))
 
             # Receive and process messages
             data = client.recv(1024).decode('utf-8')
