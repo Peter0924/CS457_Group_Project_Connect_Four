@@ -28,13 +28,11 @@ def update_game_state(response):
     global game_state
     
     if response_data['type'] == 'update':
-        # Update game state with the latest board, turn, and players list
         game_state["board"] = response_data["board"]
         game_state["turn"] = response_data["turn"]
         game_state["players"] = response_data["players"]
         render_board()
         
-        # Only print turn information once, after each update
         if game_state["turn"] == username:
             logging.info("It's your turn!")
         else:

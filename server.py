@@ -32,7 +32,6 @@ def broadcast_message(message, exclude_client=None):
                 logging.error(f"Error broadcasting to {clients[client_socket]['username']}: {e}")
                 disconnected_clients.append(client_socket)
 
-    # Remove disconnected clients from the list
     for client_socket in disconnected_clients:
         if client_socket in clients:
             del clients[client_socket]
@@ -77,7 +76,7 @@ def handle_join(client_socket, data):
     game_state["players"].append(username)
     
     if len(game_state["players"]) == 1:
-        game_state["turn"] = username  # First player to join gets the first turn
+        game_state["turn"] = username  
     
     response = {"type": "join", "message": f"{username} has joined the game."}
     broadcast_message(json.dumps(response))
@@ -93,13 +92,13 @@ def handle_move(client_socket, data):
     if column is not None and 0 <= column < 7:
         for row in reversed(range(6)):
             if game_state["board"][row][column] == "":
-                game_state["board"][row][column] = username[0]  # Place player's initial as a marker
+                game_state["board"][row][column] = username[0]
                 break
         else:
             logging.warning("Column is full!")
             return
 
-        # Toggle turn to the next player
+        
         next_index = (game_state["players"].index(username) + 1) % len(game_state["players"])
         game_state["turn"] = game_state["players"][next_index]
 
