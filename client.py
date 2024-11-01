@@ -10,26 +10,45 @@ HOST = '127.0.0.1'  # Server address
 PORT = 12345      # Server port
 
 game_state = {
-    "player_position": None,
+    "board": [["" for _ in range(7)] for _ in range(6)],
     "turn": None,
-    "players": [],
+    "players": []
 }
+username = None
+
+def render_board():
+    """Render the game board in the console."""
+    print("\nCurrent Board:")
+    for row in game_state["board"]:
+        print(" | ".join(cell or " " for cell in row))
+    print("\n")
 
 def update_game_state(response):
     response_data = json.loads(response)
+    global game_state
     
-    if response_data['type'] == 'join':
+    if response_data['type'] == 'update':
+        # Update game state with the latest board, turn, and players list
+        game_state["board"] = response_data["board"]
+        game_state["turn"] = response_data["turn"]
+        game_state["players"] = response_data["players"]
+        render_board()
+        if game_state["turn"] == username:
+            logging.info("It's your turn!")
+        else:
+            logging.info(f"Waiting for {game_state['turn']} to make a move.")
+
+    elif response_data['type'] == 'join':
         logging.info(response_data['message'])
-        game_state["players"].append(response_data['message']) 
+
     elif response_data['type'] == 'move':
         logging.info(response_data['message'])
-        game_state["player_position"] = response_data['message']
+
     elif response_data['type'] == 'chat':
         logging.info(f"Chat message: {response_data['message']}")
+
     elif response_data['type'] == 'quit':
         logging.info(response_data['message'])
-        leaving_player = response_data['message'].split(" ")[0]
-        game_state["players"] = [p for p in game_state["players"] if leaving_player not in p]
 
 def receive_messages(client):
     while True:
@@ -43,6 +62,7 @@ def receive_messages(client):
             break
 
 def start_client():
+    global username
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         client.connect((HOST, PORT))
@@ -59,23 +79,33 @@ def start_client():
         client.send((join_message + '\n').encode('utf-8'))
 
         while True:
-            message = input("Enter message (type 'move', 'chat', or 'quit' to disconnect): ")
+            if game_state["turn"] == username:
+                # Only allow input when it's the client's turn
+                message = input("Enter 'move' to play, 'chat' to send a message, or 'quit' to disconnect: ")
 
-            if message.lower() == 'move':
-                x = int(input("Enter x coordinate: "))
-                y = int(input("Enter y coordinate: "))
-                move_message = json.dumps({"type": "move", "x": x, "y": y})
-                client.send((move_message + '\n').encode('utf-8'))
+                if message.lower() == 'move':
+                    try:
+                        column = int(input("Enter column (0-6): "))
+                        if column < 0 or column > 6:
+                            print("Invalid column. Please enter a number between 0 and 6.")
+                            continue
+                        move_message = json.dumps({"type": "move", "column": column})
+                        client.send((move_message + '\n').encode('utf-8'))
+                    except ValueError:
+                        print("Invalid input. Please enter a number.")
+                    
+                elif message.lower() == 'chat':
+                    chat_message = input("Enter chat message: ")
+                    chat_message = json.dumps({"type": "chat", "message": chat_message})
+                    client.send((chat_message + '\n').encode('utf-8'))
 
-            elif message.lower() == 'chat':
-                chat_message = input("Enter chat message: ")
-                chat_message = json.dumps({"type": "chat", "message": chat_message})
-                client.send((chat_message + '\n').encode('utf-8'))
-
-            elif message.lower() == 'quit':
-                quit_message = json.dumps({"type": "quit"})
-                client.send((quit_message + '\n').encode('utf-8'))
-                break
+                elif message.lower() == 'quit':
+                    quit_message = json.dumps({"type": "quit"})
+                    client.send((quit_message + '\n').encode('utf-8'))
+                    break
+            else:
+                # Display turn information and wait if it's not the client's turn
+                logging.info(f"Waiting for {game_state['turn']} to make a move...")
 
     except Exception as e:
         logging.error(f"Connection error: {e}")
