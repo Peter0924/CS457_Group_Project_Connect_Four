@@ -68,19 +68,19 @@ def start_client():
         client.connect((HOST, PORT))
         logging.info(f"Connected to server at {HOST}:{PORT}")
 
-        # Start message receiving thread
+       
         receive_thread = threading.Thread(target=receive_messages, args=(client,))
         receive_thread.daemon = True
         receive_thread.start()
 
-        # Send a join message to the server
+        
         username = input("Enter your username: ")
         join_message = json.dumps({"type": "join", "username": username})
         client.send((join_message + '\n').encode('utf-8'))
 
         while True:
             if game_state["turn"] == username:
-                # Only allow input when it's the client's turn
+                
                 message = input("Enter 'move' to play, 'chat' to send a message, or 'quit' to disconnect: ")
 
                 if message.lower() == 'move':
@@ -104,7 +104,7 @@ def start_client():
                     client.send((quit_message + '\n').encode('utf-8'))
                     break
             else:
-                # Display turn information and wait if it's not the client's turn
+                
                 logging.info(f"Waiting for {game_state['turn']} to make a move...")
 
     except Exception as e:
