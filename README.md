@@ -1,76 +1,100 @@
-# Sprint 1 Overview
 
-This is a simple implementation of a server-client application using Python. The server can handle multiple client connections simultaneously, and both the server and clients can exchange messages.
+# Connect Four Game with Real-Time Chat
 
-## How to run
+This project is a **Connect Four** game implemented in Python, with an added real-time chat feature. Players can compete in the classic game of Connect Four while communicating with each other during gameplay.
 
-1. **Start the Server** 
-   - Run `python server.py`
+## Features
 
-2. **Start the Client** 
-   - Run `python client.py`
+- **Real-Time Chat**: Players can send messages to each other during the game.
+- **Turn-Based Gameplay**: Alternating turns ensure only the current player can make a move.
+- **Game State Synchronization**: The server maintains a consistent game state across all connected clients.
+- **Player Identification**: Each player has a unique username, making it easy to track moves and chat messages.
+- **Automatic Victory Detection**: The server detects when a player connects four discs and announces the winner.
+- **Reset and Restart Functionality**: Players can restart the game after a round is completed.
 
-3. **Message exchange** 
-   - Type any message in client terminal and press enter, the server should print out the message and echo it back to the client.
+## Technologies Used
 
-4. **Shutdonw the Server** 
-   - Type `shutdown` or `CTRL + C` to shut down the server
+- **Python**
+- **Sockets**: For real-time communication between the server and clients.
 
-5. **Shutdown the Client** 
-   - Type `exit` to shut down the client
+## How to Set Up and Run
 
-## Test Instructions
+### 1. Create a Virtual Environment (Optional but Recommended)
 
-1. **Create a virtual environment to isolate our project's dependencies** 
-   - `python -m venv venv`
+To isolate the project’s dependencies:
 
-2. **Activate Virtual Environment** 
-   - Run the `venv/Scripts/activate`
+```bash
+python -m venv venv
+```
 
-3. **Start the Server** 
-   - Start the another new terminal and run `python server.py`
+Activate the virtual environment:
 
-4. **Run the Test** 
-   - Go back to the terminal where we activate the virtual environment
-   - Run the test by using `pytest test.py`
-   
+- **Windows**: `venv\Scripts\activate`
+- **Mac/Linux**: `source venv/bin/activate`
 
-# Connect Four Game with Chat Feature
+### 2. Start the Server
 
-This is a **Connect Four** game implemented using Python, enhanced with a built-in chat feature. Players can enjoy the classic game while chatting with each other in real time during gameplay.
+In a terminal, start the server:
 
-## How to play:
-1. **Start the game:** Run the `connect_four_server.py` script to start the server, then run the `connect_four_client.py` script on two different machines or terminals to connect as players.
+```bash
+python server.py
+```
 
-2. **Game setup:** The game starts with an empty 6x7 grid. Two players alternate turns to drop their discs.
+### 3. Start the Client
 
-3. **Play the game:**
-   - Players select a column to drop their disc into. The disc will fall to the lowest available row in that column.
-   - The first player to connect four discs vertically, horizontally, or diagonally wins!
+In separate terminals, start the client for each player:
 
-4. **Chat while playing:** Players can send messages to each other during the game using the built-in chat interface.
+```bash
+python client.py
+```
 
-5. **Message Commands:** Players can utilize four different message commands during the game:
-   - join: Player joins game.
-   - move: Player moves to a specified x and y position.
-   - chat: Player sends a message.
-   - quit: Player leaves game.
+You can run multiple clients to connect multiple players.
 
-6. **Restart the game:** Once a game is finished, players can reset and play again.
+### 4. Play the Game
 
-## Features:
-- Real-time chat functionality during the game
-- Graphical interface for the grid and player interaction
-- Two-player local game mode
-- Automatic victory detection
-- Reset and restart functionality
+- **Join the Game**: Each player enters a username upon connecting.
+- **Take Turns**: Players take turns selecting a column (0-6) to drop their disc.
+- **Win the Game**: The first player to connect four discs in a row (vertically, horizontally, or diagonally) wins!
+- **Chat with Players**: Players can use the chat feature at any time during the game.
+- **Restart**: Once a game finishes, players can reset and play again.
 
-## Technologies used:
-- Python
-- Sockets for real-time communication
+## In-Game Commands
 
-## Game Rules:
-- Players take turns selecting a column to drop their disc.
-- A player wins by connecting four discs in a row (vertically, horizontally, or diagonally).
-- If all grid spaces are filled and no player has connected four, the game results in a draw.
-- Players can chat with each other at any time during the game.
+Players can enter the following commands during the game:
+
+- **join**: Join the game with a username.
+- **move**: Make a move by selecting a column.
+- **chat**: Send a message to all players.
+- **quit**: Leave the game.
+
+## Game Rules
+
+1. **Connect Four**: Players take turns dropping discs into columns. The disc falls to the lowest available row in that column.
+2. **Victory Condition**: A player wins by connecting four discs in a row vertically, horizontally, or diagonally.
+3. **Draw Condition**: If all grid spaces are filled and no player has connected four, the game ends in a draw.
+4. **Chat Feature**: Players can communicate with each other in real-time using the chat feature.
+
+## Shutting Down
+
+- **Server Shutdown**: Type `shutdown` in the server terminal or press `CTRL + C` to terminate the server.
+- **Client Exit**: Type `quit` in the client terminal to exit the game.
+
+## Testing Instructions
+
+1. **Activate the Virtual Environment** (if set up earlier):
+
+    ```bash
+    # Windows
+    venv\Scripts\activate
+
+    # Mac/Linux
+    source venv/bin/activate
+    ```
+
+2. **Start the Server**: In a new terminal, run `python server.py`.
+
+3. **Run Tests** (if test files are available):
+
+    ```bash
+    pytest test.py
+    ```

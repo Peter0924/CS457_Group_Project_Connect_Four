@@ -3,44 +3,57 @@ import threading
 import logging
 import json
 
-# Setup to log connection and disconnection events
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 
-clients = {} 
+clients = {}  # Stores client socket with details
+game_state = {
+    "board": [["" for _ in range(7)] for _ in range(6)],  # Empty 6x7 board
+    "turn": None,
+    "players": []
+}
 
-def broadcast_message(message):
-    """Send a message to all connected clients."""
+def broadcast_game_state():
+    """Send the current game state to all clients."""
+    game_state_message = json.dumps({
+        "type": "update",
+        "board": game_state["board"],
+        "turn": game_state["turn"],
+        "players": game_state["players"]
+    })
+    broadcast_message(game_state_message)
+
+def broadcast_message(message, exclude_client=None):
+    disconnected_clients = []
     for client_socket in clients:
-        try:
-            client_socket.send(message.encode('utf-8'))
-        except Exception as e:
-            logging.error(f"Error broadcasting to {clients[client_socket]}: {e}")
+        if client_socket != exclude_client:  
+            try:
+                client_socket.send((message + '\n').encode('utf-8'))
+            except Exception as e:
+                logging.error(f"Error broadcasting to {clients[client_socket]['username']}: {e}")
+                disconnected_clients.append(client_socket)
+
+    # Remove disconnected clients from the list
+    for client_socket in disconnected_clients:
+        if client_socket in clients:
+            del clients[client_socket]
 
 def client_connection(client_socket, client_address):
     logging.info(f"Connection established with {client_address}")
-    clients[client_socket] = {"address": client_address, "username": None, "position": (0,0)}
+    clients[client_socket] = {"address": client_address, "username": None, "id": len(clients)}
 
-    while True:
-        try:
+    try:
+        while True:
             message = client_socket.recv(1024).decode('utf-8')
             if not message:
                 break
-            logging.info(f"Message received from {client_address}: {message}")
             handle_message(client_socket, message)
-        except ConnectionResetError:
-            logging.error(f"Connection lost with {client_address}")
-            break
-        except Exception as e:
-            logging.error(f"Unexpected error with client {client_address}: {e}")
-            break
-
-    logging.info(f"Client {client_address} disconnected.")
-    if client_socket in clients:
-        del clients[client_socket]
-    client_socket.close()
+    except (ConnectionResetError, OSError):
+        logging.error(f"Connection lost with {client_address}")
+    finally:
+        handle_quit(client_socket)
+        client_socket.close()
 
 def handle_message(client_socket, message):
-    """Handle different types of messages from clients."""
     try:
         data = json.loads(message)
         message_type = data.get('type')
@@ -61,42 +74,67 @@ def handle_message(client_socket, message):
 def handle_join(client_socket, data):
     username = data.get('username')
     clients[client_socket]["username"] = username
-    clients[client_socket]["position"] = (0, 0) # initialize at (0,0)
-    response = {"type": "join", "message": f"Player {username} has joined the game."}
+    game_state["players"].append(username)
+    
+    if len(game_state["players"]) == 1:
+        game_state["turn"] = username  # First player to join gets the first turn
+    
+    response = {"type": "join", "message": f"{username} has joined the game."}
     broadcast_message(json.dumps(response))
+    broadcast_game_state()
 
 def handle_move(client_socket, data):
-    x, y = data.get('x'), data.get('y')
     username = clients[client_socket]["username"]
-    clients[client_socket]["position"] = (x, y)
-    response = {"type": "move", "message": f"{username} moved to ({x}, {y})"}
-    broadcast_message(json.dumps(response))
+    if game_state["turn"] != username:
+        logging.warning(f"It's not {username}'s turn.")
+        return
+    
+    column = data.get('column')
+    if column is not None and 0 <= column < 7:
+        for row in reversed(range(6)):
+            if game_state["board"][row][column] == "":
+                game_state["board"][row][column] = username[0]  # Place player's initial as a marker
+                break
+        else:
+            logging.warning("Column is full!")
+            return
+
+        # Toggle turn to the next player
+        next_index = (game_state["players"].index(username) + 1) % len(game_state["players"])
+        game_state["turn"] = game_state["players"][next_index]
+
+        response = {"type": "move", "message": f"{username} made a move in column {column}."}
+        broadcast_message(json.dumps(response))
+        broadcast_game_state()
+    else:
+        logging.error("Invalid move data")
 
 def handle_chat(client_socket, data):
     username = clients[client_socket]["username"]
     chat_message = data.get('message')
     response = {"type": "chat", "message": f"{username}: {chat_message}"}
-    broadcast_message(json.dumps(response))
+    broadcast_message(json.dumps(response), exclude_client=client_socket)
 
 def handle_quit(client_socket):
-    username = clients[client_socket]["username"]
-    response = {"type": "quit", "message": f"{username} has left the game."}
-    broadcast_message(json.dumps(response))
-    client_socket.close()
+    username = clients[client_socket].get("username") if client_socket in clients else None
+    if username:
+        response = {"type": "quit", "message": f"{username} has left the game."}
+        broadcast_message(json.dumps(response), exclude_client=client_socket)
+        game_state["players"].remove(username)
+        logging.info(f"Client {username} has been removed from the game.")
     if client_socket in clients:
-        del clients[client_socket]  # Remove client from list
+        del clients[client_socket]
+    broadcast_game_state()
 
 def server_startup(server_address='0.0.0.0', port=12345):
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.bind((server_address, port))
-    server.listen(5)  # Set the max number of simultaneous connections
+    server.listen(5)
     logging.info(f"Server started on {server_address}:{port}")
 
-    # Start a thread to accept client connections
     accept_thread = threading.Thread(target=accept_connections, args=(server,))
     accept_thread.start()
 
-    # Wait for shutdown command
     try:
         while True:
             command = input("Type 'shutdown' to stop the server: ").strip().lower()
@@ -113,10 +151,8 @@ def accept_connections(server):
     while True:
         try:
             client_socket, client_address = server.accept()
-            logging.info(f"Connection from {client_address} established.")
-
             client_handler = threading.Thread(target=client_connection, args=(client_socket, client_address))
-            client_handler.daemon = True 
+            client_handler.daemon = True
             client_handler.start()
         except OSError:
             break
