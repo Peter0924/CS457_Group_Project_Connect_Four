@@ -39,11 +39,8 @@ def check_winner():
 def reset_game_state():
     """Reset the game state for a new round."""
     global game_state
-    game_state = {
-        "board": [["" for _ in range(7)] for _ in range(6)],
-        "turn": None,
-        "players": game_state["players"]  # Keep the same players
-    }
+    game_state["board"] = [["" for _ in range(7)] for _ in range(6)]
+    game_state["turn"] = game_state["players"][0] if game_state["players"] else None
 
 def broadcast_game_state():
     game_state_message = json.dumps({
@@ -133,7 +130,6 @@ def handle_move(client_socket, data):
         winner = check_winner()
         if winner:
             broadcast_message(json.dumps({"type": "game_over", "message": f"{winner} wins!"}))
-            game_state["board"] = [["" for _ in range(7)] for _ in range(6)]
             game_state["turn"] = None
         else:
             next_index = (game_state["players"].index(username) + 1) % len(game_state["players"])
@@ -160,6 +156,7 @@ def handle_quit(client_socket):
 def handle_new_game():
     """Handle resetting the game for a new round."""
     reset_game_state()
+    broadcast_message(json.dumps({"type": "new_game"}))
     broadcast_message(json.dumps({"type": "chat", "message": "A new game has started!"}))
     broadcast_game_state()
 
