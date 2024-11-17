@@ -11,11 +11,13 @@ This project is a **Connect Four** game implemented in Python, with an added rea
 - **Player Identification**: Each player has a unique username, making it easy to track moves and chat messages.
 - **Automatic Victory Detection**: The server detects when a player connects four discs and announces the winner.
 - **Reset and Restart Functionality**: Players can restart the game after a round is completed.
+- **Intuitive UI with Pygame**: A simple and interactive game board and chat interface, built using Pygame.
 
 ## Technologies Used
 
 - **Python**
 - **Sockets**: For real-time communication between the server and clients.
+- **Pygame**: For the game board and user interface.
 
 ## How to Set Up and Run
 
@@ -32,23 +34,35 @@ Activate the virtual environment:
 - **Windows**: `venv\Scripts\activate`
 - **Mac/Linux**: `source venv/bin/activate`
 
-### 2. Start the Server
+### 2. Install Dependencies
+
+Ensure you have Pygame installed:
+
+```bash
+pip install pygame
+
+```
+
+### 3. Start the Server
 
 In a terminal, start the server:
 
 ```bash
-python server.py
-```
+python server.py -p <PORT>
 
-### 3. Start the Client
+```
+Replace <PORT> with the desired port number, e.g., 12345.
+
+### 4. Start the Client
 
 In separate terminals, start the client for each player:
 
 ```bash
-python client.py
+python client.py -i <SERVER_IP> -p <PORT>
+
 ```
 
-You can run multiple clients to connect multiple players.
+Replace <SERVER_IP> with the server's IP address and <PORT> with the port number you used for the server.
 
 ### 4. Play the Game
 
@@ -56,7 +70,7 @@ You can run multiple clients to connect multiple players.
 - **Take Turns**: Players take turns selecting a column (0-6) to drop their disc.
 - **Win the Game**: The first player to connect four discs in a row (vertically, horizontally, or diagonally) wins!
 - **Chat with Players**: Players can use the chat feature at any time during the game.
-- **Restart**: Once a game finishes, players can reset and play again.
+- **Restart**: After a round ends, players can click the "New Game" button to reset the board and start over.
 
 ## In-Game Commands
 
@@ -65,7 +79,7 @@ Players can enter the following commands during the game:
 - **join**: Join the game with a username.
 - **move**: Make a move by selecting a column.
 - **chat**: Send a message to all players.
-- **quit**: Leave the game.
+- **quit**: Click the "Quit" button or close the window to exit.
 
 ## Game Rules
 
@@ -79,22 +93,3 @@ Players can enter the following commands during the game:
 - **Server Shutdown**: Type `shutdown` in the server terminal or press `CTRL + C` to terminate the server.
 - **Client Exit**: Type `quit` in the client terminal to exit the game.
 
-## Testing Instructions
-
-1. **Activate the Virtual Environment** (if set up earlier):
-
-    ```bash
-    # Windows
-    venv\Scripts\activate
-
-    # Mac/Linux
-    source venv/bin/activate
-    ```
-
-2. **Start the Server**: In a new terminal, run `python server.py`.
-
-3. **Run Tests** (if test files are available):
-
-    ```bash
-    pytest test.py
-    ```
