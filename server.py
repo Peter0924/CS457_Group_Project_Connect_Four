@@ -142,7 +142,8 @@ def handle_move(client_socket, data):
 def handle_chat(client_socket, data):
     username = clients[client_socket]["username"]
     chat_message = data.get('message')
-    broadcast_message(json.dumps({"type": "chat", "message": f"{username}: {chat_message}"}), exclude_client=client_socket)
+    if chat_message:
+        broadcast_message(json.dumps({"type": "chat", "message": f"{username}: {chat_message}"}))
 
 def handle_quit(client_socket):
     username = clients[client_socket].get("username")
