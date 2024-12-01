@@ -46,24 +46,52 @@ def draw_button(screen, text, x, y, width, height, color, text_color):
 
 def render_board(screen):
     """Draw the game board on the screen."""
+    player_colors = [RED, (0, 255, 0)]  # Red for Player 1, Green for Player 2
+    player_map = {}  # Map players to their assigned colors based on turn order
+
+    # Assign colors to players based on their order in the `game_state["players"]`
+    for i, player in enumerate(game_state["players"]):
+        if i < len(player_colors):  # Only assign if within predefined colors
+            player_map[player] = player_colors[i]
+
     for row in range(ROW_COUNT):
         for col in range(COLUMN_COUNT):
+            # Draw the board grid
             pygame.draw.rect(screen, BLUE, (col * SQUARE_SIZE, row * SQUARE_SIZE + SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
             pygame.draw.circle(screen, BLACK, (int(col * SQUARE_SIZE + SQUARE_SIZE / 2), int(row * SQUARE_SIZE + SQUARE_SIZE + SQUARE_SIZE / 2)), RADIUS)
-    
+
     for row in range(ROW_COUNT):
         for col in range(COLUMN_COUNT):
-            if game_state["board"][row][col] == username[0]:
-                pygame.draw.circle(screen, RED, (int(col * SQUARE_SIZE + SQUARE_SIZE / 2), SCREEN_HEIGHT - int((ROW_COUNT - row - 1) * SQUARE_SIZE + SQUARE_SIZE / 2)), RADIUS)
-            elif game_state["board"][row][col] != "":
-                pygame.draw.circle(screen, YELLOW, (int(col * SQUARE_SIZE + SQUARE_SIZE / 2), SCREEN_HEIGHT - int((ROW_COUNT - row - 1) * SQUARE_SIZE + SQUARE_SIZE / 2)), RADIUS)
+            if game_state["board"][row][col]:
+                player_initial = game_state["board"][row][col]
+                # Find the username corresponding to the initial
+                player_color = BLACK  # Default to black for undefined colors
+                for player, color in player_map.items():
+                    if player[0] == player_initial:  # Match initial to username
+                        player_color = color
+                        break
+                # Draw the player's piece
+                pygame.draw.circle(screen, player_color, (int(col * SQUARE_SIZE + SQUARE_SIZE / 2), SCREEN_HEIGHT - int((ROW_COUNT - row - 1) * SQUARE_SIZE + SQUARE_SIZE / 2)), RADIUS)
 
 def render_chat(screen, font):
-    """Display chat messages on the right side of the screen."""
+    """Display chat messages and player colors on the right side of the screen."""
     chat_x = SCREEN_WIDTH
     chat_y = 10
     chat_width = 300
     pygame.draw.rect(screen, WHITE, (chat_x, 0, chat_width, SCREEN_HEIGHT))
+
+    # Show player names and their colors at the top
+    player_colors = [RED, (0, 255, 0)]  # Red for Player 1, Green for Player 2
+    for i, player in enumerate(game_state["players"]):
+        color = player_colors[i] if i < len(player_colors) else BLACK  # Default to black for undefined players
+        pygame.draw.circle(screen, color, (chat_x + 15, chat_y + 15), 10)  # Draw a small circle with the player's color
+        player_text = font.render(player, True, BLACK)
+        screen.blit(player_text, (chat_x + 30, chat_y))  # Render the player's name next to the circle
+        chat_y += 30
+
+    chat_y += 10  # Add some spacing before chat messages
+
+    # Render the chat messages
     for message in chat_messages[-20:]:  # Show the last 20 messages
         text_surface = font.render(message, True, BLACK)
         screen.blit(text_surface, (chat_x + 10, chat_y))
