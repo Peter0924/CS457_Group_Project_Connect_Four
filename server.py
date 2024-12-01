@@ -8,13 +8,13 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 
 clients = {}
 game_state = {
-    "board": [["" for _ in range(7)] for _ in range(6)],
+    "board": [["" for _ in range(7)] for _ in range(5)],
     "turn": None,
     "players": []
 }
 
 def check_winner():
-    """Check for a winning condition on the board."""
+    """Check for a winning condition or a tie on the 5x7 board."""
     board = game_state["board"]
 
     def check_line(start_row, start_col, delta_row, delta_col):
@@ -23,23 +23,28 @@ def check_winner():
             return False
         for i in range(1, 4):
             row, col = start_row + i * delta_row, start_col + i * delta_col
-            if board[row][col] != player:
+            if row < 0 or row >= 5 or col < 0 or col >= 7 or board[row][col] != player:
                 return False
         return True
 
-    for row in range(6):
-        for col in range(7):
+    # Check for a winner
+    for row in range(5):  # Adjusted for 5 rows
+        for col in range(7):  # 7 columns
             if (col <= 3 and check_line(row, col, 0, 1)) or \
-               (row <= 2 and check_line(row, col, 1, 0)) or \
-               (row <= 2 and col <= 3 and check_line(row, col, 1, 1)) or \
+               (row <= 1 and check_line(row, col, 1, 0)) or \
+               (row <= 1 and col <= 3 and check_line(row, col, 1, 1)) or \
                (row >= 3 and col <= 3 and check_line(row, col, -1, 1)):
                 return board[row][col]
+
+    # Check for a tie
+    if all(board[row][col] != "" for row in range(5) for col in range(7)): 
+        return "tie"
+
     return None
 
 def reset_game_state():
-    """Reset the game state for a new round."""
     global game_state
-    game_state["board"] = [["" for _ in range(7)] for _ in range(6)]
+    game_state["board"] = [["" for _ in range(7)] for _ in range(5)]  # Reset to 5x7
     game_state["turn"] = game_state["players"][0] if game_state["players"] else None
 
 def broadcast_game_state():
@@ -118,8 +123,8 @@ def handle_move(client_socket, data):
         return
 
     column = data.get('column')
-    if column is not None and 0 <= column < 7:
-        for row in reversed(range(6)):
+    if column is not None and 0 <= column < 7:  # Check for valid column range
+        for row in reversed(range(5)):  # Adjust to 5 rows
             if game_state["board"][row][column] == "":
                 game_state["board"][row][column] = username[0]
                 break
@@ -128,7 +133,10 @@ def handle_move(client_socket, data):
             return
 
         winner = check_winner()
-        if winner:
+        if winner == "tie":
+            broadcast_message(json.dumps({"type": "game_tie", "message": "The game is a tie!"}))
+            game_state["turn"] = None
+        elif winner:
             broadcast_message(json.dumps({"type": "game_over", "message": f"{winner} wins!"}))
             game_state["turn"] = None
         else:
