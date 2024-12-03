@@ -170,29 +170,31 @@ def render_chat(screen, font, chat_input):
 def update_game_state(response):
     """Update the game state based on the server response."""
     global game_state, game_over
-    data = json.loads(response)
+    try:
+        data = json.loads(response)
+        logging.info(f"Received server message: {data}")
 
-    logging.info(f"Received server message: {data}")
-
-    if data['type'] == 'update':
-        game_state["board"] = data["board"]
-        game_state["turn"] = data["turn"]
-        game_state["players"] = data["players"]
-    elif data['type'] == 'chat':
-        chat_messages.append(data['message'])
-    elif data['type'] == 'game_over':
-        logging.info("Game over detected.")
-        chat_messages.append(data['message'])
-        game_over = True
-    elif data['type'] == 'game_tie':
-        logging.info("Tie detected.")
-        chat_messages.append(data['message'])
-        game_over = True
-    elif data['type'] == 'new_game':
-        reset_game_state()
-        chat_messages.append("A new game has started!")
-    elif data['type'] in ('join', 'move', 'quit'):
-        chat_messages.append(data['message'])
+        if data['type'] == 'update':
+            game_state["board"] = data["board"]
+            game_state["turn"] = data["turn"]
+            game_state["players"] = data["players"]
+        elif data['type'] == 'chat':
+            chat_messages.append(data['message'])
+        elif data['type'] == 'error':  # Display server error messages
+            chat_messages.append(f"Error: {data['message']}")
+        elif data['type'] == 'game_over':
+            chat_messages.append(data['message'])
+            game_over = True
+        elif data['type'] == 'game_tie':
+            chat_messages.append(data['message'])
+            game_over = True
+        elif data['type'] == 'new_game':
+            reset_game_state()
+            chat_messages.append("A new game has started!")
+        elif data['type'] in ('join', 'move', 'quit'):
+            chat_messages.append(data['message'])
+    except json.JSONDecodeError:
+        logging.error(f"Malformed response from server: {response}")
 
 
 def receive_messages():
@@ -204,6 +206,9 @@ def receive_messages():
             if data:
                 for response in data.strip().split('\n'):
                     update_game_state(response)
+        except (ConnectionResetError, OSError):
+            chat_messages.append("Disconnected from server. Please restart the client.")
+            break
         except Exception as e:
             logging.error(f"Error receiving data: {e}")
             break

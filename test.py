@@ -78,3 +78,39 @@ def test_client_connection(test_server):
     finally:
         client.close()
         print("[DEBUG] Client socket closed.")
+
+# Test invalid move: column out of range
+def test_invalid_move_out_of_range(test_server):
+    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        client.connect(('127.0.0.1', 12345))
+        client.send(json.dumps({"type": "join", "username": "TestPlayer"}).encode('utf-8'))
+        time.sleep(1)
+
+        client.send(json.dumps({"type": "move", "column": 10}).encode('utf-8'))  # Invalid column
+        response = client.recv(1024).decode('utf-8')
+        assert "Invalid move: column out of range" in response
+    finally:
+        client.close()
+
+# Test server handling abrupt client disconnection
+def test_abrupt_client_disconnection(test_server):
+    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        client.connect(('127.0.0.1', 12345))
+        client.send(json.dumps({"type": "join", "username": "TestPlayer"}).encode('utf-8'))
+        client.close()  # Abruptly close the connection
+        time.sleep(1)
+    except Exception as e:
+        pytest.fail(f"Unexpected exception: {e}")
+
+# Test server response to invalid JSON
+def test_invalid_json_message(test_server):
+    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        client.connect(('127.0.0.1', 12345))
+        client.send(b"This is not JSON\n")  # Invalid JSON message
+        response = client.recv(1024).decode('utf-8')
+        assert "Invalid message format" in response
+    finally:
+        client.close()

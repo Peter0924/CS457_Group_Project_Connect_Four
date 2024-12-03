@@ -75,10 +75,18 @@ def client_connection(client_socket, client_address):
 
     try:
         while True:
-            message = client_socket.recv(1024).decode('utf-8')
-            if not message:
+            try:
+                message = client_socket.recv(1024).decode('utf-8')
+                if not message:
+                    logging.warning(f"Empty message received from {client_address}")
+                    break
+                handle_message(client_socket, message)
+            except json.JSONDecodeError:
+                logging.error(f"Malformed message from {client_address}: {message}")
+                client_socket.send(json.dumps({"type": "error", "message": "Invalid message format"}).encode('utf-8'))
+            except Exception as e:
+                logging.error(f"Unexpected error with {client_address}: {e}")
                 break
-            handle_message(client_socket, message)
     except (ConnectionResetError, OSError):
         logging.error(f"Connection lost with {client_address}")
     finally:
