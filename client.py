@@ -36,16 +36,16 @@ def get_username(screen, font):
     input_active = True
     clock = pygame.time.Clock()
     pulse_direction = 1
-    pulse_value = 255  # Start with max brightness for animation
+    pulse_value = 255  
 
     while input_active:
-        screen.fill(WHITE)  # Clear the screen
+        screen.fill(WHITE) 
 
-        # Render instructions
+        
         instructions = font.render("Enter your username:", True, BLACK)
         screen.blit(instructions, (100, 150))
 
-        # Pulse animation for the input box
+       
         pulse_value += pulse_direction * 5
         if pulse_value > 255:
             pulse_value = 255
@@ -54,26 +54,25 @@ def get_username(screen, font):
             pulse_value = 100
             pulse_direction = 1
 
-        pulse_color = (pulse_value, pulse_value, pulse_value)  # Ensure it's a valid RGB tuple
-        pygame.draw.rect(screen, pulse_color, (100, 200, 400, 50), border_radius=5)  # Pulsing background
-        pygame.draw.rect(screen, WHITE, (100, 200, 400, 50), 2, border_radius=5)  # Box border
+        pulse_color = (pulse_value, pulse_value, pulse_value) 
+        pygame.draw.rect(screen, pulse_color, (100, 200, 400, 50), border_radius=5)  
+        pygame.draw.rect(screen, WHITE, (100, 200, 400, 50), 2, border_radius=5) 
 
-        # Render input text
+        
         input_text = font.render(username_input, True, BLACK)
         screen.blit(input_text, (110, 210))
 
-        # Handle events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
 
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RETURN:  # Finish input on Enter
+                if event.key == pygame.K_RETURN: 
                     input_active = False
-                elif event.key == pygame.K_BACKSPACE:  # Delete last character
+                elif event.key == pygame.K_BACKSPACE:  
                     username_input = username_input[:-1]
-                else:  # Add typed character to username
+                else: 
                     username_input += event.unicode
 
         pygame.display.update()
