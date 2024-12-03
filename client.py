@@ -139,12 +139,14 @@ def render_chat(screen, font, chat_input):
     chat_x = SCREEN_WIDTH
     chat_width = 300
 
+    # Draw the background gradient for the chat area
     for i in range(SCREEN_HEIGHT):
         color_value = int(255 - (255 * (i / SCREEN_HEIGHT)))
         pygame.draw.rect(screen, (color_value, color_value, color_value), (chat_x, i, chat_width, 1))
 
-    chat_y = 10
+    chat_y = 10  # Initial y position for messages
 
+    # Display player colors and names
     player_colors = [RED, (0, 255, 0)]
     for i, player in enumerate(game_state["players"]):
         color = player_colors[i] if i < len(player_colors) else BLACK
@@ -153,18 +155,36 @@ def render_chat(screen, font, chat_input):
         screen.blit(player_text, (chat_x + 30, chat_y))
         chat_y += 30
 
-    chat_y += 10  
+    chat_y += 10  # Add some spacing below player list
 
-    for message in chat_messages[-20:]:
-        text_surface = font.render(message, True, BLACK)
-        screen.blit(text_surface, (chat_x + 10, chat_y))
-        chat_y += 30
+    # Render chat messages, wrapping long messages
+    for message in chat_messages[-20:]:  # Only show the last 20 messages
+        words = message.split(' ')
+        wrapped_lines = []
+        line = ""
 
+        for word in words:
+            test_line = line + word + " "
+            if font.size(test_line)[0] > chat_width - 20:  # Wrap line if it exceeds the chat width
+                wrapped_lines.append(line)
+                line = word + " "
+            else:
+                line = test_line
+
+        if line:
+            wrapped_lines.append(line)
+
+        for wrapped_line in wrapped_lines:
+            text_surface = font.render(wrapped_line, True, BLACK)
+            screen.blit(text_surface, (chat_x + 10, chat_y))
+            chat_y += 20  # Move down for the next line
+
+    # Render chat input box
     input_box_y = SCREEN_HEIGHT - 50
     pygame.draw.rect(screen, BLACK, (chat_x + 10, input_box_y, chat_width - 20, 40), border_radius=5)
     pygame.draw.rect(screen, WHITE, (chat_x + 10, input_box_y, chat_width - 20, 40), 2, border_radius=5)
     chat_surface = font.render(chat_input, True, WHITE)
-    screen.blit(chat_surface, (chat_x + 15, input_box_y + 10)) 
+    screen.blit(chat_surface, (chat_x + 15, input_box_y + 10))
 
 def update_game_state(response):
     """Update the game state based on the server response."""

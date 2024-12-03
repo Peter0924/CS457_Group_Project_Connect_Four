@@ -52,17 +52,13 @@ def check_winner():
     return None
 
 def reset_game_state():
-    """
-    Resets the game state, clearing the board and setting the turn to the first player.
-    """
+    """Resets the game state, clearing the board and setting the turn to the first player."""
     global game_state
     game_state["board"] = [["" for _ in range(7)] for _ in range(5)]
     game_state["turn"] = game_state["players"][0] if game_state["players"] else None
 
 def broadcast_game_state():
-    """
-    Sends the current game state to all connected clients.
-    """
+    """Sends the current game state to all connected clients."""
     game_state_message = json.dumps({
         "type": "update",
         "board": game_state["board"],
@@ -72,10 +68,7 @@ def broadcast_game_state():
     broadcast_message(game_state_message)
 
 def broadcast_message(message, exclude_client=None):
-    """
-    Sends a message to all connected clients.
-    Removes any disconnected clients.
-    """
+    """Sends a message to all connected clients.Removes any disconnected clients."""
     disconnected_clients = []
     for client_socket in clients:
         if client_socket != exclude_client:
@@ -89,9 +82,7 @@ def broadcast_message(message, exclude_client=None):
             del clients[client_socket]
 
 def client_connection(client_socket, client_address):
-    """
-    Handles communication with a single client, including receiving and processing messages.
-    """
+    """Handles communication with a single client, including receiving and processing messages."""
     logging.info(f"Connection established with {client_address}")
     clients[client_socket] = {"address": client_address, "username": None, "id": len(clients)}
 
@@ -116,9 +107,7 @@ def client_connection(client_socket, client_address):
         client_socket.close()
 
 def handle_message(client_socket, message):
-    """
-    Handles message from a client by identifying its type and taking appropriate action.
-    """
+    """Handles message from a client by identifying its type and taking appropriate action."""
     try:
         data = json.loads(message)
         message_type = data.get('type')
@@ -139,9 +128,7 @@ def handle_message(client_socket, message):
         logging.error(f"Failed to decode message: {message}")
 
 def handle_join(client_socket, data):
-    """
-    Handles a client joining the game by adding their username to the game state and broadcast to others.
-    """
+    """Handles a client joining the game by adding their username to the game state and broadcast to others."""
     username = data.get('username')
     clients[client_socket]["username"] = username
     game_state["players"].append(username)
@@ -153,10 +140,16 @@ def handle_join(client_socket, data):
     broadcast_game_state()
 
 def handle_move(client_socket, data):
-    """
-    Handles a player's move, updating the board, checking for a winner or tie, and updating the turn.
-    """
+    """Handles a player's move, updating the board, checking for a winner or tie, and updating the turn."""
     username = clients[client_socket]["username"]
+    if len(game_state["players"]) < 2:
+        # Send an error message to the player trying to move
+        client_socket.send(json.dumps({
+            "type": "error",
+            "message": "Wait for another player to join before making a move."
+        }).encode('utf-8'))
+        return
+
     if game_state["turn"] != username:
         logging.warning(f"It's not {username}'s turn.")
         return
@@ -187,18 +180,14 @@ def handle_move(client_socket, data):
         logging.error("Invalid move data")
 
 def handle_chat(client_socket, data):
-    """
-    Handles a chat message from a client and broadcasts it to all connected clients.
-    """
+    """Handles a chat message from a client and broadcasts it to all connected clients."""
     username = clients[client_socket]["username"]
     chat_message = data.get('message')
     if chat_message:
         broadcast_message(json.dumps({"type": "chat", "message": f"{username}: {chat_message}"}))
 
 def handle_quit(client_socket):
-    """
-    Handles a client leaving the game by removing them from the game state and notifying others.
-    """
+    """Handles a client leaving the game by removing them from the game state and notifying others."""
     username = clients[client_socket].get("username")
     if username:
         game_state["players"].remove(username)
@@ -208,18 +197,14 @@ def handle_quit(client_socket):
     broadcast_game_state()
 
 def handle_new_game():
-    """
-    Resets the game state and notifies all clients about the start of a new game.
-    """
+    """Resets the game state and notifies all clients about the start of a new game."""
     reset_game_state()
     broadcast_message(json.dumps({"type": "new_game"}))
     broadcast_message(json.dumps({"type": "chat", "message": "A new game has started!"}))
     broadcast_game_state()
 
 def server_startup():
-    """
-    Starts the server, listens for incoming connections, and spawns threads to handle clients.
-    """
+    """Starts the server, listens for incoming connections, and spawns threads to handle clients."""
     parser = argparse.ArgumentParser()
     parser.add_argument("-p", "--port", type=int, required=True, help="Port to run the server on")
     args = parser.parse_args()
