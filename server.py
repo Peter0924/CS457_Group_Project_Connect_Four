@@ -6,7 +6,9 @@ import argparse
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 
+# Stores connected clients' information
 clients = {}
+# Represents the state of the game, including the board, the current turn, and the players
 game_state = {
     "board": [["" for _ in range(7)] for _ in range(5)],
     "turn": None,
@@ -14,10 +16,17 @@ game_state = {
 }
 
 def check_winner():
-    """Check for a winning condition or a tie on the 5x7 board."""
+    """
+    Checks if there is a winner or a tie on the 5x7 game board.
+    Returns:
+        - Winner's token if there is a winner.
+        - "tie" if the game ends in a tie.
+        - None if the game is still ongoing.
+    """
     board = game_state["board"]
 
     def check_line(start_row, start_col, delta_row, delta_col):
+        """Helper function to check if there are 4 tokens in a row."""
         player = board[start_row][start_col]
         if not player:
             return False
@@ -27,27 +36,33 @@ def check_winner():
                 return False
         return True
 
-    # Check for a winner
-    for row in range(5):  # Adjusted for 5 rows
-        for col in range(7):  # 7 columns
+    # Check all possible winning lines
+    for row in range(5):
+        for col in range(7):
             if (col <= 3 and check_line(row, col, 0, 1)) or \
                (row <= 1 and check_line(row, col, 1, 0)) or \
                (row <= 1 and col <= 3 and check_line(row, col, 1, 1)) or \
                (row >= 3 and col <= 3 and check_line(row, col, -1, 1)):
                 return board[row][col]
 
-    # Check for a tie
-    if all(board[row][col] != "" for row in range(5) for col in range(7)): 
+    # Check for a tie if the board is full
+    if all(board[row][col] != "" for row in range(5) for col in range(7)):
         return "tie"
 
     return None
 
 def reset_game_state():
+    """
+    Resets the game state, clearing the board and setting the turn to the first player.
+    """
     global game_state
-    game_state["board"] = [["" for _ in range(7)] for _ in range(5)]  # Reset to 5x7
+    game_state["board"] = [["" for _ in range(7)] for _ in range(5)]
     game_state["turn"] = game_state["players"][0] if game_state["players"] else None
 
 def broadcast_game_state():
+    """
+    Sends the current game state to all connected clients.
+    """
     game_state_message = json.dumps({
         "type": "update",
         "board": game_state["board"],
@@ -57,6 +72,10 @@ def broadcast_game_state():
     broadcast_message(game_state_message)
 
 def broadcast_message(message, exclude_client=None):
+    """
+    Sends a message to all connected clients.
+    Removes any disconnected clients.
+    """
     disconnected_clients = []
     for client_socket in clients:
         if client_socket != exclude_client:
@@ -70,6 +89,9 @@ def broadcast_message(message, exclude_client=None):
             del clients[client_socket]
 
 def client_connection(client_socket, client_address):
+    """
+    Handles communication with a single client, including receiving and processing messages.
+    """
     logging.info(f"Connection established with {client_address}")
     clients[client_socket] = {"address": client_address, "username": None, "id": len(clients)}
 
@@ -94,6 +116,9 @@ def client_connection(client_socket, client_address):
         client_socket.close()
 
 def handle_message(client_socket, message):
+    """
+    Handles message from a client by identifying its type and taking appropriate action.
+    """
     try:
         data = json.loads(message)
         message_type = data.get('type')
@@ -114,6 +139,9 @@ def handle_message(client_socket, message):
         logging.error(f"Failed to decode message: {message}")
 
 def handle_join(client_socket, data):
+    """
+    Handles a client joining the game by adding their username to the game state and broadcast to others.
+    """
     username = data.get('username')
     clients[client_socket]["username"] = username
     game_state["players"].append(username)
@@ -125,6 +153,9 @@ def handle_join(client_socket, data):
     broadcast_game_state()
 
 def handle_move(client_socket, data):
+    """
+    Handles a player's move, updating the board, checking for a winner or tie, and updating the turn.
+    """
     username = clients[client_socket]["username"]
     if game_state["turn"] != username:
         logging.warning(f"It's not {username}'s turn.")
@@ -132,7 +163,7 @@ def handle_move(client_socket, data):
 
     column = data.get('column')
     if column is not None and 0 <= column < 7:  # Check for valid column range
-        for row in reversed(range(5)):  # Adjust to 5 rows
+        for row in reversed(range(5)):
             if game_state["board"][row][column] == "":
                 game_state["board"][row][column] = username[0]
                 break
@@ -156,12 +187,18 @@ def handle_move(client_socket, data):
         logging.error("Invalid move data")
 
 def handle_chat(client_socket, data):
+    """
+    Handles a chat message from a client and broadcasts it to all connected clients.
+    """
     username = clients[client_socket]["username"]
     chat_message = data.get('message')
     if chat_message:
         broadcast_message(json.dumps({"type": "chat", "message": f"{username}: {chat_message}"}))
 
 def handle_quit(client_socket):
+    """
+    Handles a client leaving the game by removing them from the game state and notifying others.
+    """
     username = clients[client_socket].get("username")
     if username:
         game_state["players"].remove(username)
@@ -171,13 +208,18 @@ def handle_quit(client_socket):
     broadcast_game_state()
 
 def handle_new_game():
-    """Handle resetting the game for a new round."""
+    """
+    Resets the game state and notifies all clients about the start of a new game.
+    """
     reset_game_state()
     broadcast_message(json.dumps({"type": "new_game"}))
     broadcast_message(json.dumps({"type": "chat", "message": "A new game has started!"}))
     broadcast_game_state()
 
 def server_startup():
+    """
+    Starts the server, listens for incoming connections, and spawns threads to handle clients.
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument("-p", "--port", type=int, required=True, help="Port to run the server on")
     args = parser.parse_args()
