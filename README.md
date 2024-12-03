@@ -94,13 +94,13 @@ Replace <SERVER_IP> with the server's IP address and <PORT> with the port number
 
 ## Retrospective on Overall Project
 
-# What Went Right
+### What Went Right
 
 - Successfully implemented core gameplay mechanics and synchronized game state across clients.
 - Real-time communication and chat functionality worked as intended.
 - The Pygame-based interface provides a functional and intuitive experience for players.
 
-# What Could Be Improved On
+### What Could Be Improved On
 
 - The current UI can be improved to make it more visually appealing and user-friendly, potentially by transitioning to a web-based interface.
 - The game lacks scalability for hosting multiple games or players simultaneously.
