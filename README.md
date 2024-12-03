@@ -64,22 +64,13 @@ python client.py -i <SERVER_IP> -p <PORT>
 
 Replace <SERVER_IP> with the server's IP address and <PORT> with the port number you used for the server.
 
-### 4. Play the Game
+### 5. Play the Game
 
 - **Join the Game**: Each player enters a username upon connecting.
 - **Take Turns**: Players take turns selecting a column (0-6) to drop their disc.
 - **Win the Game**: The first player to connect four discs in a row (vertically, horizontally, or diagonally) wins!
 - **Chat with Players**: Players can use the chat feature at any time during the game.
 - **Restart**: After a round ends, players can click the "New Game" button to reset the board and start over.
-
-## In-Game Commands
-
-Players can enter the following commands during the game:
-
-- **join**: Join the game with a username.
-- **move**: Make a move by selecting a column.
-- **chat**: Send a message to all players.
-- **quit**: Click the "Quit" button or close the window to exit.
 
 ## Game Rules
 
@@ -91,5 +82,7 @@ Players can enter the following commands during the game:
 ## Shutting Down
 
 - **Server Shutdown**: Type `shutdown` in the server terminal or press `CTRL + C` to terminate the server.
-- **Client Exit**: Type `quit` in the client terminal to exit the game.
+- **Client Exit**: Type `quit` in the client terminal to exit the game or click quit button to exit the game.
+
+### 5. Play the Game
 
