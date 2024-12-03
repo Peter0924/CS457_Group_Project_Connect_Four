@@ -156,9 +156,10 @@ def handle_move(client_socket, data):
 
     column = data.get('column')
     if column is not None and 0 <= column < 7:  # Check for valid column range
+        player_index = game_state["players"].index(username)  # Use player index as their token
         for row in reversed(range(5)):
             if game_state["board"][row][column] == "":
-                game_state["board"][row][column] = username[0]
+                game_state["board"][row][column] = str(player_index)  # Use player index as token
                 break
         else:
             logging.warning("Column is full!")
@@ -169,7 +170,7 @@ def handle_move(client_socket, data):
             broadcast_message(json.dumps({"type": "game_tie", "message": "The game is a tie!"}))
             game_state["turn"] = None
         elif winner:
-            broadcast_message(json.dumps({"type": "game_over", "message": f"{winner} wins!"}))
+            broadcast_message(json.dumps({"type": "game_over", "message": f"{game_state['players'][int(winner)]} wins!"}))
             game_state["turn"] = None
         else:
             next_index = (game_state["players"].index(username) + 1) % len(game_state["players"])

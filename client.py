@@ -85,68 +85,57 @@ def reset_game_state():
     """Reset the game state for a new round and update the turn."""
     global game_state, game_over
     game_state["board"] = [["" for _ in range(COLUMN_COUNT)] for _ in range(ROW_COUNT)]
-    game_state["turn"] = game_state["players"][0] if game_state["players"] else None  # Set turn to the first player
+    game_state["turn"] = game_state["players"][0] if game_state["players"] else None  
     game_over = False
 
 def draw_button(screen, text, x, y, width, height, color, text_color, hover=False):
     """Draw a button with hover effects and a shadow."""
     shadow_color = (50, 50, 50) if not hover else (100, 100, 100)
-    pygame.draw.rect(screen, shadow_color, (x + 3, y + 3, width, height))  # Shadow
-    pygame.draw.rect(screen, color, (x, y, width, height))  # Main button
+    pygame.draw.rect(screen, shadow_color, (x + 3, y + 3, width, height)) 
+    pygame.draw.rect(screen, color, (x, y, width, height)) 
 
     if hover:
-        pygame.draw.rect(screen, (255, 255, 255), (x, y, width, height), 3)  # Hover border
+        pygame.draw.rect(screen, (255, 255, 255), (x, y, width, height), 3) 
 
     font = pygame.font.SysFont(None, 36)
     text_surface = font.render(text, True, text_color)
     screen.blit(text_surface, (x + (width - text_surface.get_width()) // 2, y + (height - text_surface.get_height()) // 2))
 
 def render_board(screen):
-    """Draw the game board on the screen with a gradient background and glowing pieces."""
+    """Draw the game board on the screen."""
     for i in range(SCREEN_HEIGHT):
         color_value = int(200 - (200 * (i / SCREEN_HEIGHT)))
         pygame.draw.rect(screen, (0, color_value, 255), (0, i, SCREEN_WIDTH, 1))
 
-    player_colors = [RED, (0, 255, 0)] 
-    player_map = {}
-
-    for i, player in enumerate(game_state["players"]):
-        if i < len(player_colors):
-            player_map[player] = player_colors[i]
+    player_colors = [RED, (0, 255, 0)]  
 
     for row in range(ROW_COUNT):
         for col in range(COLUMN_COUNT):
             center = (int(col * SQUARE_SIZE + SQUARE_SIZE / 2), int(row * SQUARE_SIZE + SQUARE_SIZE + SQUARE_SIZE / 2))
-            pygame.draw.circle(screen, BLACK, center, RADIUS + 3) 
-            pygame.draw.circle(screen, (50, 50, 50), center, RADIUS) 
+            pygame.draw.circle(screen, BLACK, center, RADIUS + 3)  
+            pygame.draw.circle(screen, (50, 50, 50), center, RADIUS)  
 
     for row in range(ROW_COUNT):
         for col in range(COLUMN_COUNT):
-            if game_state["board"][row][col]:
-                player_initial = game_state["board"][row][col]
-                color = BLACK
-                for player, assigned_color in player_map.items():
-                    if player[0] == player_initial:
-                        color = assigned_color
-                        break
-      
+            token = game_state["board"][row][col]
+            if token:
+                color = player_colors[int(token)]  
                 center = (int(col * SQUARE_SIZE + SQUARE_SIZE / 2), SCREEN_HEIGHT - int((ROW_COUNT - row - 1) * SQUARE_SIZE + SQUARE_SIZE / 2))
-                pygame.draw.circle(screen, (255, 255, 255), center, RADIUS + 5) 
-                pygame.draw.circle(screen, color, center, RADIUS)
+                pygame.draw.circle(screen, (255, 255, 255), center, RADIUS + 5)  
+                pygame.draw.circle(screen, color, center, RADIUS)  
 
 def render_chat(screen, font, chat_input):
     """Display chat messages and player colors with an input box for new messages."""
     chat_x = SCREEN_WIDTH
     chat_width = 300
+    max_messages = 20
 
-    # Draw the background gradient for the chat area
     for i in range(SCREEN_HEIGHT):
         color_value = int(255 - (255 * (i / SCREEN_HEIGHT)))
         pygame.draw.rect(screen, (color_value, color_value, color_value), (chat_x, i, chat_width, 1))
 
-    chat_y = 10  # Initial y position for messages
+    chat_y = 10  
 
-    # Display player colors and names
     player_colors = [RED, (0, 255, 0)]
     for i, player in enumerate(game_state["players"]):
         color = player_colors[i] if i < len(player_colors) else BLACK
@@ -155,17 +144,17 @@ def render_chat(screen, font, chat_input):
         screen.blit(player_text, (chat_x + 30, chat_y))
         chat_y += 30
 
-    chat_y += 10  # Add some spacing below player list
+    chat_y += 10  
 
-    # Render chat messages, wrapping long messages
-    for message in chat_messages[-20:]:  # Only show the last 20 messages
+    visible_messages = chat_messages[-max_messages:]
+    for message in visible_messages:
         words = message.split(' ')
         wrapped_lines = []
         line = ""
 
         for word in words:
             test_line = line + word + " "
-            if font.size(test_line)[0] > chat_width - 20:  # Wrap line if it exceeds the chat width
+            if font.size(test_line)[0] > chat_width - 20:  
                 wrapped_lines.append(line)
                 line = word + " "
             else:
@@ -177,9 +166,8 @@ def render_chat(screen, font, chat_input):
         for wrapped_line in wrapped_lines:
             text_surface = font.render(wrapped_line, True, BLACK)
             screen.blit(text_surface, (chat_x + 10, chat_y))
-            chat_y += 20  # Move down for the next line
+            chat_y += 20  
 
-    # Render chat input box
     input_box_y = SCREEN_HEIGHT - 50
     pygame.draw.rect(screen, BLACK, (chat_x + 10, input_box_y, chat_width - 20, 40), border_radius=5)
     pygame.draw.rect(screen, WHITE, (chat_x + 10, input_box_y, chat_width - 20, 40), 2, border_radius=5)
