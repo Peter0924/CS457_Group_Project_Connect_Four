@@ -84,5 +84,26 @@ Replace <SERVER_IP> with the server's IP address and <PORT> with the port number
 - **Server Shutdown**: Type `shutdown` in the server terminal or press `CTRL + C` to terminate the server.
 - **Client Exit**: Type `quit` in the client terminal to exit the game or click quit button to exit the game.
 
-### 5. Play the Game
+## Brief roadmap of where you would take the project
+
+1. **Advanced UI with Web Integration**: Replace the Pygame interface with a web-based UI using modern frameworks like React. This would enable more flexibility and a better user experience.
+2. **Matchmaking and Player Lobby**: Introduce a feature for creating and joining game lobbies, enabling players to find and compete with others online.
+3. **AI Opponent**: Add a single-player mode where users can play against a AI with adjustable difficulty levels.
+4. **Leaderboards and Statistics**: Track and display player stats, including wins, losses, and ties, in a persistent leaderboard.
+5. **Enhanced Chat Features**: Add emojis, message notifications, and group chat capabilities for a richer communication experience.
+
+## Retrospective on Overall Project
+
+# What Went Right
+
+- Successfully implemented core gameplay mechanics and synchronized game state across clients.
+- Real-time communication and chat functionality worked as intended.
+- The Pygame-based interface provides a functional and intuitive experience for players.
+
+# What Could Be Improved On
+
+- The current UI can be improved to make it more visually appealing and user-friendly, potentially by transitioning to a web-based interface.
+- The game lacks scalability for hosting multiple games or players simultaneously.
+- Error handling could be further refined for better resilience to unexpected scenarios.
+
 
