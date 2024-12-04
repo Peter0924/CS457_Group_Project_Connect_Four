@@ -130,6 +130,18 @@ def handle_message(client_socket, message):
 def handle_join(client_socket, data):
     """Handles a client joining the game by adding their username to the game state and broadcast to others."""
     username = data.get('username')
+
+    if len(game_state["players"]) >= 2:
+        client_socket.send(json.dumps({
+            "type": "error",
+            "message": "The game is full. Please try again later."
+        }).encode('utf-8'))
+        logging.info(f"Rejected connection from {clients[client_socket]['address']}: Game is full")
+        client_socket.close()
+        if client_socket in clients:
+            del clients[client_socket]
+        return
+
     clients[client_socket]["username"] = username
     game_state["players"].append(username)
 

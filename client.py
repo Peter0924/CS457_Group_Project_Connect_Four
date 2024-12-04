@@ -146,28 +146,28 @@ def render_chat(screen, font, chat_input):
 
     chat_y += 10  
 
-    visible_messages = chat_messages[-max_messages:]
+    visible_messages = chat_messages[-max_messages:]  
     for message in visible_messages:
         words = message.split(' ')
-        wrapped_lines = []
         line = ""
+        wrapped_lines = []
 
         for word in words:
-            test_line = line + word + " "
-            if font.size(test_line)[0] > chat_width - 20:  
+            test_line = f"{line} {word}".strip()
+            if font.size(test_line)[0] > chat_width - 20:   
                 wrapped_lines.append(line)
-                line = word + " "
+                line = word
             else:
                 line = test_line
 
-        if line:
-            wrapped_lines.append(line)
+        wrapped_lines.append(line)  
 
         for wrapped_line in wrapped_lines:
             text_surface = font.render(wrapped_line, True, BLACK)
             screen.blit(text_surface, (chat_x + 10, chat_y))
             chat_y += 20  
 
+    
     input_box_y = SCREEN_HEIGHT - 50
     pygame.draw.rect(screen, BLACK, (chat_x + 10, input_box_y, chat_width - 20, 40), border_radius=5)
     pygame.draw.rect(screen, WHITE, (chat_x + 10, input_box_y, chat_width - 20, 40), 2, border_radius=5)
