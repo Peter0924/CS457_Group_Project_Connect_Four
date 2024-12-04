@@ -58,6 +58,7 @@ python server.py -p <PORT>
 
 ```
 Replace <PORT> with the desired port number, e.g., 12345.
+Server IP defaults to 127.0.0.1.
 
 ### 4. Start the Client
 
