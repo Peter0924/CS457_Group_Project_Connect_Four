@@ -40,6 +40,8 @@ Ensure you have Pygame installed:
 
 ```bash
 pip install pygame
+OR
+pip3 install pygame
 
 ```
 
