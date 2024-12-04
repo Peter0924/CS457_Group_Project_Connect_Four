@@ -35,6 +35,12 @@ Activate the virtual environment:
 - **Mac/Linux**: `source venv/bin/activate`
 
 ### 2. Install Dependencies
+Ensure you have Python (3.6 or later) installed:
+
+```bash
+module load python/bundle-3.6
+
+```
 
 Ensure you have Pygame installed:
 
