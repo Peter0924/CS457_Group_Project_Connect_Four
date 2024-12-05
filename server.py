@@ -3,6 +3,7 @@ import threading
 import logging
 import json
 import argparse
+import uuid
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 
@@ -128,8 +129,9 @@ def handle_message(client_socket, message):
         logging.error(f"Failed to decode message: {message}")
 
 def handle_join(client_socket, data):
-    """Handles a client joining the game by adding their username to the game state and broadcast to others."""
+    """Handles a client joining the game by adding their username and player ID to the game state and broadcast to others."""
     username = data.get('username')
+    playerID = str(uuid.uuid4())
 
     if len(game_state["players"]) >= 2:
         client_socket.send(json.dumps({
@@ -143,10 +145,11 @@ def handle_join(client_socket, data):
         return
 
     clients[client_socket]["username"] = username
-    game_state["players"].append(username)
+    clients[client_socket]["id"] = playerID
+    game_state["players"].append({"id": playerID, "username": username})
 
     if len(game_state["players"]) == 1:
-        game_state["turn"] = username
+        game_state["turn"] = playerID
 
     broadcast_message(json.dumps({"type": "join", "message": f"{username} has joined the game."}))
     broadcast_game_state()
@@ -154,6 +157,7 @@ def handle_join(client_socket, data):
 def handle_move(client_socket, data):
     """Handles a player's move, updating the board, checking for a winner or tie, and updating the turn."""
     username = clients[client_socket]["username"]
+    playerID = clients[client_socket]["id"]
     if len(game_state["players"]) < 2:
         client_socket.send(json.dumps({
             "type": "error",
