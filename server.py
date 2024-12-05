@@ -130,6 +130,18 @@ def handle_message(client_socket, message):
 def handle_join(client_socket, data):
     """Handles a client joining the game by adding their username to the game state and broadcast to others."""
     username = data.get('username')
+
+    if len(game_state["players"]) >= 2:
+        client_socket.send(json.dumps({
+            "type": "error",
+            "message": "The game is full. Please try again later."
+        }).encode('utf-8'))
+        logging.info(f"Rejected connection from {clients[client_socket]['address']}: Game is full")
+        client_socket.close()
+        if client_socket in clients:
+            del clients[client_socket]
+        return
+
     clients[client_socket]["username"] = username
     game_state["players"].append(username)
 
@@ -143,7 +155,6 @@ def handle_move(client_socket, data):
     """Handles a player's move, updating the board, checking for a winner or tie, and updating the turn."""
     username = clients[client_socket]["username"]
     if len(game_state["players"]) < 2:
-        # Send an error message to the player trying to move
         client_socket.send(json.dumps({
             "type": "error",
             "message": "Wait for another player to join before making a move."
@@ -155,11 +166,11 @@ def handle_move(client_socket, data):
         return
 
     column = data.get('column')
-    if column is not None and 0 <= column < 7:  # Check for valid column range
-        player_index = game_state["players"].index(username)  # Use player index as their token
+    if column is not None and 0 <= column < 7:  
+        player_index = game_state["players"].index(username)  
         for row in reversed(range(5)):
             if game_state["board"][row][column] == "":
-                game_state["board"][row][column] = str(player_index)  # Use player index as token
+                game_state["board"][row][column] = str(player_index) 
                 break
         else:
             logging.warning("Column is full!")
