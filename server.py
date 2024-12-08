@@ -131,6 +131,19 @@ def handle_join(client_socket, data):
     """Handles a client joining the game by adding their username to the game state and broadcast to others."""
     username = data.get('username')
 
+    # Check if the username is already in use
+    if username in game_state["players"]:
+        client_socket.send(json.dumps({
+            "type": "error",
+            "message": f"The username '{username}' is already taken. Please choose another one."
+        }).encode('utf-8'))
+        logging.info(f"Rejected connection from {clients[client_socket]['address']}: Username '{username}' is already taken")
+        client_socket.close()
+        if client_socket in clients:
+            del clients[client_socket]
+        return
+
+    # Check if the game already has two players
     if len(game_state["players"]) >= 2:
         client_socket.send(json.dumps({
             "type": "error",
@@ -142,6 +155,7 @@ def handle_join(client_socket, data):
             del clients[client_socket]
         return
 
+    # Add the player to the game
     clients[client_socket]["username"] = username
     game_state["players"].append(username)
 
