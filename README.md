@@ -103,6 +103,8 @@ Replace <SERVER_IP> with the server's IP address and <PORT> with the port number
 
 ### What Went Right
 
+Overall, there were plenty of things that went right during this semester-long project. Initially, our plan was to create a fun, interactive, easy-to-play, connect four game using python, sockets, and pygame. In the end, we were able to successfully implement the core gameplay mechanics required for a connect four game between two players, and created a solid framework that synchronized game state across both clients. We were able to also introduce a variety of features, including real-time communication between players which used a chat/textbox function. On top of all of that, we went one step beyond and made sure to implement a user interface that really made the game come together. This was created with the use of pygame. All in all, we're pretty happy with what we acomplished for our connect four game project.
+
 - Successfully implemented core gameplay mechanics and synchronized game state across clients.
 - Real-time communication and chat functionality worked as intended.
 - The Pygame-based interface provides a functional and intuitive experience for players.
