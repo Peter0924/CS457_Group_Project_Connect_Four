@@ -111,6 +111,8 @@ Overall, there were plenty of things that went right during this semester-long p
 
 ### What Could Be Improved On
 
+Due to the nature of a class project and only having a semester to work on it, there will of course still be things that could be improved on in the future. Firstly, we would implement encryption for our players to make sure that the game is secure and safe to play. This is important, especially for an online game. As an online game, we would also like to introduce some more intensive scalability for multiplayer compatibility, introducing the option to host multiple games on a server at once. We also believe that the current UI, although great, can be improved on in the future. Creating new UI elements that are not only integral to gameplay, but provide a more visually appealing look, would be our first priority. We might also consider transitioning to a more web browser focused interface, as we believe our game would be perfect for such an environment. Finally, the never ending battle against bugs and errors wouldn't slow down. To combat this, we would extensively review our current error handling methods, and make sure that anything that could possibly disrupt the player experience is accounted for. Overall, there are a lot of things we can improve on going forward, yet we are still fulfilled with the game's current state.
+
 - The current UI can be improved to make it more visually appealing and user-friendly, potentially by transitioning to a web-based interface.
 - The game lacks scalability for hosting multiple games or players simultaneously.
 - Error handling could be further refined for better resilience to unexpected scenarios.
